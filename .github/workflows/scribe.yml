@@ -1,0 +1,44 @@
+name: ScribeSecurity
+
+on:
+  push:
+    branches: 
+      - "main"
+      
+jobs:
+  scribe-report-test:
+    runs-on: ubuntu-latest
+    
+      - uses: actions/checkout@v3
+
+      - name: Scm generate bom, upload to scribe
+        id: valint_bom_scm
+        uses: scribe-security/action-bom@master
+        with:
+           type: dir
+           target: "."
+           scribe-enable: true
+           scribe-client-id: ${{ secrets.ScribeSecurityClientId }}
+           scribe-client-secret: ${{ secrets.ScribeSecurityClientSecret }}
+           product-key: directus
+
+
+      - name: Container image generate bom, upload to scribe
+        id: valint_bom_image
+        uses: scribe-security/action-bom@master
+        with:
+           target: 'directus/directus:9'
+           scribe-enable: true
+           scribe-enable: true
+           scribe-client-id: ${{ secrets.ScribeSecurityClientId }}
+           scribe-client-secret: ${{ secrets.ScribeSecurityClientSecret }}
+           product-key: directus
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: scribe-reports
+          path: |
+            ${{ steps.valint_bom_scm.outputs.OUTPUT_PATH }}
+            ${{ steps.valint_bom_image.outputs.OUTPUT_PATH }}
+
+
